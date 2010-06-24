@@ -22,7 +22,7 @@ class auth_Core {
     $form = new Forge($url, "", "post", array("id" => "g-login-form"));
     $form->set_attr("class", "g-narrow");
     $form->hidden("continue_url")->value(Session::instance()->get("continue_url"));
-    $group = $form->group("login")->label(t("Login"));
+    $group = $form->group("login")->label("الولوج");
     $group->input("name")->label(t("Username"))->id("g-username")->class(null)
       ->callback("auth::validate_too_many_failed_logins")
       ->error_messages(

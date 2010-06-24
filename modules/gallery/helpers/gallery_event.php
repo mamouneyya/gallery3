@@ -195,7 +195,7 @@ class gallery_event_Core {
         if ($can_add) {
           $menu->append($add_menu = Menu::factory("submenu")
                         ->id("add_menu")
-                        ->label(t("Add")));
+                        ->label("الإضافة"));
           $is_album_writable =
             is_writable($item->is_album() ? $item->file_path() : $item->parent()->file_path());
           if ($is_album_writable) {
