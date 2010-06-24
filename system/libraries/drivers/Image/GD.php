@@ -317,7 +317,7 @@ class Image_GD_Driver extends Image_Driver {
 			throw new Kohana_Exception('Your configured driver does not support the :method: image transformation.', array(':method:' => __FUNCTION__));
 
 		// Amount should be in the range of 18-10
-		$amount = round(abs(-18 + ($amount * 0.08)), 2);
+		$amount = round(abs(-26 + ($amount * 0.16)), 2);
 
 		// Gaussian blur matrix
 		$matrix = array
