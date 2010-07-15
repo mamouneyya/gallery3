@@ -34,7 +34,7 @@ class Organize_Controller extends Controller {
     $file_filter = json_encode(
       array("photo" => array("label" => "Images",
                              "types" => array("*.jpg", "*.jpeg", "*.png", "*.gif")),
-            "movie" => array("label" => "Movies", "types" => array("*.flv", "*.mp4"))));
+            "movie" => array("label" => "Movies", "types" => array("*.flv", "*.mp4", "*.m4v"))));
 
     $v = new View("organize_dialog.html");
     $v->album = $album;
@@ -47,7 +47,7 @@ class Organize_Controller extends Controller {
     $v->controller_uri = url::site("organize") . "/";
     $v->swf_uri = url::file("modules/organize/lib/Gallery3WebClient.swf?") .
       filemtime(MODPATH . "organize/lib/Gallery3WebClient.swf");
-    print $v;
+    print json_encode(array("form" => (string) $v));
   }
 
   function add_album_fields() {

@@ -9,7 +9,7 @@
       uploader: "<?= url::file("lib/uploadify/uploadify.swf") ?>",
       script: "<?= url::site("flash_uploader/add_photo/{$album->id}") ?>",
       scriptData: <?= json_encode($script_data) ?>,
-      fileExt: "*.gif;*.jpg;*.jpeg;*.png;*.flv;*.mp4;*.GIF;*.JPG;*.JPEG;*.PNG;*.FLV;*.MP4",
+      fileExt: "*.gif;*.jpg;*.jpeg;*.png;*.flv;*.mp4;*.m4v;*.GIF;*.JPG;*.JPEG;*.PNG;*.FLV;*.MP4;*.M4V",
       fileDesc: <?= t("Photos and movies")->for_js() ?>,
       cancelImg: "<?= url::file("lib/uploadify/cancel.png") ?>",
       simUploadLimit: <?= $simultaneous_upload_limit ?>,
@@ -88,6 +88,7 @@
 </ul>
 <? endif ?>
 
+<? if (!empty($album)): ?>
 <div>
   <p>
     <?= t("Photos will be uploaded to album: ") ?>
@@ -99,6 +100,7 @@
     <li class="g-active"> <?= html::purify($album->title) ?> </li>
   </ul>
 </div>
+<? endif ?>
 
 <div id="g-add-photos-canvas">
   <button id="g-add-photos-button" class="g-button ui-state-default ui-corner-all" href="#"><?= t("Select photos...") ?></button>

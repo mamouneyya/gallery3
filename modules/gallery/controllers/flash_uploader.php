@@ -26,7 +26,8 @@ class Flash_Uploader_Controller extends Controller {
       $item = $item->parent();
     }
 
-    print $this->_get_add_form($item);
+    print json_encode(array("form" => (string)$this->_get_add_form($item)));
+    //print $this->_get_add_form($item);
   }
 
   public function start() {
@@ -50,7 +51,7 @@ class Flash_Uploader_Controller extends Controller {
     // Uploadify adds its own field to the form, so validate that separately.
     $file_validation = new Validation($_FILES);
     $file_validation->add_rules(
-      "Filedata", "upload::valid",  "upload::required", "upload::type[gif,jpg,jpeg,png,flv,mp4]");
+      "Filedata", "upload::valid",  "upload::required", "upload::type[gif,jpg,jpeg,png,flv,mp4,m4v]");
 
     if ($form->validate() && $file_validation->validate()) {
       $temp_filename = upload::save("Filedata");
@@ -63,7 +64,7 @@ class Flash_Uploader_Controller extends Controller {
 
         $path_info = @pathinfo($temp_filename);
         if (array_key_exists("extension", $path_info) &&
-            in_array(strtolower($path_info["extension"]), array("flv", "mp4"))) {
+            in_array(strtolower($path_info["extension"]), array("flv", "mp4", "m4v"))) {
           $item->type = "movie";
           $item->save();
           log::success("content", t("Added a movie"),
