@@ -193,7 +193,9 @@ class gallery_event_Core {
                       ->url(user_profile::url($user->id))
                       ->label($user->display_name()));
 
-        if (isset($theme->item)) {
+        if (Router::$controller == "admin") {
+          $continue_url = url::site("");
+        } else if (isset($theme->item)) {
           if (access::user_can(identity::guest(), "view", $theme->item)) {
             $continue_url = $theme->item->abs_url();
           } else {
@@ -206,8 +208,7 @@ class gallery_event_Core {
         $menu->append(Menu::factory("link")
                       ->id("user_menu_logout")
                       ->css_id("g-logout-link")
-                      ->url(url::site("logout?csrf=$csrf&amp;continue_url=" .
-                                      urlencode($continue_url)))
+                      ->url(url::site("logout?csrf=$csrf&amp;continue_url=" . urlencode($continue_url)))
                       ->label(t("Logout")));
       }
     }
@@ -237,7 +238,7 @@ class gallery_event_Core {
             $add_menu->append(Menu::factory("dialog")
                               ->id("add_photos_item")
                               ->label(t("Add photos"))
-                              ->url(url::site("flash_uploader/app/$item->id")));
+                              ->url(url::site("uploader/index/$item->id")));
             if ($item->is_album()) {
               $add_menu->append(Menu::factory("dialog")
                                 ->id("add_album_item")
@@ -508,7 +509,7 @@ class gallery_event_Core {
                    ->id("add_item")
                    ->label(t("Add a photo"))
                    ->css_class("ui-icon-plus")
-                   ->url(url::site("flash_uploader/app/$item->id")))
+                   ->url(url::site("uploader/index/$item->id")))
           ->append(Menu::factory("dialog")
                    ->id("add_album")
                    ->label(t("Add an album"))
