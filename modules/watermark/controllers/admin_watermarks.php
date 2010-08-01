@@ -35,7 +35,7 @@ class Admin_Watermarks_Controller extends Admin_Controller {
   }
 
   public function form_edit() {
-    print json_encode(array("form" => (string) watermark::get_edit_form()));
+    print watermark::get_edit_form();
   }
 
   public function edit() {
@@ -49,16 +49,16 @@ class Admin_Watermarks_Controller extends Admin_Controller {
 
       log::success("watermark", t("Watermark changed"));
       message::success(t("Watermark changed"));
-      print json_encode(
+      json::reply(
         array("result" => "success",
               "location" => url::site("admin/watermarks")));
     } else {
-      print json_encode(array("result" => "error", "form" => (string) $form));
+      json::reply(array("result" => "error", "html" => (string)$form));
     }
   }
 
   public function form_delete() {
-    print json_encode(array("form" => (string) watermark::get_delete_form()));
+    print watermark::get_delete_form();
   }
 
   public function delete() {
@@ -79,16 +79,14 @@ class Admin_Watermarks_Controller extends Admin_Controller {
         log::success("watermark", t("Watermark deleted"));
         message::success(t("Watermark deleted"));
       }
-      print json_encode(
-        array("result" => "success",
-              "location" => url::site("admin/watermarks")));
+      json::reply(array("result" => "success", "location" => url::site("admin/watermarks")));
     } else {
-      print json_encode(array("result" => "error", "form" => (string) $form));
+      json::reply(array("result" => "error", "html" => (string)$form));
     }
   }
 
   public function form_add() {
-    print json_encode(array("form" => (string) watermark::get_add_form()));
+    print watermark::get_add_form();
   }
 
   public function add() {
@@ -120,12 +118,20 @@ class Admin_Watermarks_Controller extends Admin_Controller {
 
       message::success(t("Watermark saved"));
       log::success("watermark", t("Watermark saved"));
-      print json_encode(
-        array("result" => "success",
-              "location" => url::site("admin/watermarks")));
+      json::reply(array("result" => "success", "location" => url::site("admin/watermarks")));
     } else {
-      print json_encode(array("result" => "error", "form" => rawurlencode((string) $form)));
+      // rawurlencode the results because the JS code that uploads the file buffers it in an
+      // iframe which entitizes the HTML and makes it difficult for the JS to process.  If we url
+      // encode it now, it passes through cleanly.  See ticket #797.
+      json::reply(array("result" => "error", "html" => rawurlencode((string)$form)));
     }
+
+    // Override the application/json mime type.  The dialog based HTML uploader uses an iframe to
+    // buffer the reply, and on some browsers (Firefox 3.6) it does not know what to do with the
+    // JSON that it gets back so it puts up a dialog asking the user what to do with it.  So force
+    // the encoding type back to HTML for the iframe.
+    // See: http://jquery.malsup.com/form/#file-upload
+    header("Content-Type: text/html; charset=" . Kohana::CHARSET);
   }
 
   private function _update_graphics_rules() {
