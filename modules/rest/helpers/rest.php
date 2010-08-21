@@ -36,7 +36,7 @@ class rest_Core {
       }
 
       if (preg_match('/^[$A-Za-z_][0-9A-Za-z_]*$/', $callback) == 1) {
-        header("Content-type: application/javascript");
+        header("Content-type: application/javascript; charset=UTF-8");
         print "$callback(" . json_encode($data) . ")";
       } else {
         throw new Rest_Exception(
@@ -45,7 +45,7 @@ class rest_Core {
       break;
 
     case "html":
-      header("Content-type: text/html");
+      header("Content-type: text/html; charset=UTF-8");
       if ($data) {
         $html = preg_replace(
           "#([\w]+?://[\w]+[^ \'\"\n\r\t<]*)#ise", "'<a href=\"\\1\" >\\1</a>'",
