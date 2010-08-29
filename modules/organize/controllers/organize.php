@@ -31,10 +31,9 @@ class Organize_Controller extends Controller {
       $sort_fields[$field] = (string)$description;
     }
     $sort_order = array("ASC" => (string)t("Ascending"), "DESC" => (string)t("Descending"));
-    $file_filter = json_encode(
-      array("photo" => array("label" => "Images",
-                             "types" => array("*.jpg", "*.jpeg", "*.png", "*.gif")),
-            "movie" => array("label" => "Movies", "types" => array("*.flv", "*.mp4", "*.m4v"))));
+    $file_filter = json_encode(array(
+      "photo" => array("label" => "Images", "types" => array("*.jpg", "*.jpeg", "*.png", "*.gif")),
+      "movie" => array("label" => "Movies", "types" => array("*.flv", "*.mp4", "*.m4v"))));
 
     $v = new View("organize_dialog.html");
     $v->album = $album;
@@ -43,6 +42,7 @@ class Organize_Controller extends Controller {
     $v->file_filter = addslashes($file_filter);
     $v->sort_order = addslashes(json_encode($sort_order));
     $v->sort_fields = addslashes(json_encode($sort_fields));
+    $v->selected_id = Input::instance()->get("selected_id", null);
     $v->rest_uri = url::site("rest") . "/";
     $v->controller_uri = url::site("organize") . "/";
     $v->swf_uri = url::file("modules/organize/lib/Gallery3WebClient.swf?") .
