@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
  */
 class gallery_Core {
-  const VERSION = "3.0 RC2 (Santa Fe)";
+  const VERSION = "3.0+ (git)";
 
   /**
    * If Gallery is in maintenance mode, then force all non-admins to get routed to a "This site is
@@ -51,6 +51,7 @@ class gallery_Core {
     if (Router::$controller != "login" &&
         Router::$controller != "combined" &&
         Router::$controller != "digibug" &&
+        Router::$controller != "rest" &&
         identity::active_user()->guest &&
         !access::user_can(identity::guest(), "view", item::root()) &&
         php_sapi_name() != "cli") {
@@ -74,6 +75,11 @@ class gallery_Core {
    * request should implement the <module>_event::gallery_ready() handler.
    */
   static function ready() {
+    // Don't keep a session for robots; it's a waste of database space.
+    if (request::user_agent("robot")) {
+      Session::instance()->abort_save();
+    }
+
     module::event("gallery_ready");
   }
 
