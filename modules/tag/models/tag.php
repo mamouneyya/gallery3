@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,15 @@
  */
 class Tag_Model_Core extends ORM {
   protected $has_and_belongs_to_many = array("items");
+
+  public function __construct($id=null) {
+    parent::__construct($id);
+
+    if (!$this->loaded()) {
+      // Set reasonable defaults
+      $this->count = 0;
+    }
+  }
 
   /**
    * Return all viewable items associated with this tag.
@@ -57,8 +66,7 @@ class Tag_Model_Core extends ORM {
 
   /**
    * Overload ORM::save() to trigger an item_related_update event for all items that are related
-   * to this tag.  Since items can be added or removed as part of the save, we need to trigger an
-   * event for the union of all related items before and after the save.
+   * to this tag.
    */
   public function save() {
     $related_item_ids = array();
@@ -70,20 +78,19 @@ class Tag_Model_Core extends ORM {
       $related_item_ids[$row->item_id] = 1;
     }
 
-    $result = parent::save();
-
-    foreach (db::build()
-             ->select("item_id")
-             ->from("items_tags")
-             ->where("tag_id", "=", $this->id)
-             ->execute() as $row) {
-      $related_item_ids[$row->item_id] = 1;
+    if (isset($this->object_relations["items"])) {
+      $added = array_diff($this->changed_relations["items"], $this->object_relations["items"]);
+      $removed = array_diff($this->object_relations["items"], $this->changed_relations["items"]);
+      if (isset($this->changed_relations["items"])) {
+        $changed = array_merge($added, $removed);
+      }
+      $this->count = count($this->object_relations["items"]) + count($added) - count($removed);
     }
 
-    if ($related_item_ids) {
-      foreach (ORM::factory("item")
-               ->where("id", "IN", array_keys($related_item_ids))
-               ->find_all() as $item) {
+    $result = parent::save();
+
+    if (!empty($changed)) {
+      foreach (ORM::factory("item")->where("id", "IN", $changed)->find_all() as $item) {
         module::event("item_related_update", $item);
       }
     }
@@ -93,7 +100,7 @@ class Tag_Model_Core extends ORM {
 
   /**
    * Overload ORM::delete() to trigger an item_related_update event for all items that are
-   * related to this tag.
+   * related to this tag, and delete all items_tags relationships.
    */
   public function delete($ignored_id=null) {
     $related_item_ids = array();
@@ -105,6 +112,7 @@ class Tag_Model_Core extends ORM {
       $related_item_ids[$row->item_id] = 1;
     }
 
+    db::build()->delete("items_tags")->where("tag_id", "=", $this->id)->execute();
     $result = parent::delete();
 
     if ($related_item_ids) {
@@ -124,7 +132,7 @@ class Tag_Model_Core extends ORM {
    * @param string $query the query string (eg "page=3")
    */
   public function url($query=null) {
-    $url = url::site("tag/{$this->name}");
+    $url = url::site("tag/{$this->id}/{$this->name}");
     if ($query) {
       $url .= "?$query";
     }

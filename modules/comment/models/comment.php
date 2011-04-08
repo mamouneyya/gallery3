@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,8 +98,8 @@ class Comment_Model_Core extends ORM {
         $this->server_http_referer = substr($input->server("HTTP_REFERER"), 0, 255);
         $this->server_http_user_agent = substr($input->server("HTTP_USER_AGENT"), 0, 128);
         $this->server_query_string = substr($input->server("QUERY_STRING"), 0, 64);
-        $this->server_remote_addr = substr($input->server("REMOTE_ADDR"), 0, 32);
-        $this->server_remote_host = substr($input->server("REMOTE_HOST"), 0, 64);
+        $this->server_remote_addr = substr($input->server("REMOTE_ADDR"), 0, 40);
+        $this->server_remote_host = substr($input->server("REMOTE_HOST"), 0, 255);
         $this->server_remote_port = substr($input->server("REMOTE_PORT"), 0, 16);
       }
 

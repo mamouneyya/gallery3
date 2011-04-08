@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
  */
 class Login_Controller extends Controller {
+  const ALLOW_MAINTENANCE_MODE = true;
+  const ALLOW_PRIVATE_GALLERY = true;
 
   public function ajax() {
     $view = new View("login_ajax.html");
@@ -40,8 +42,9 @@ class Login_Controller extends Controller {
 
   public function html() {
     $view = new Theme_View("page.html", "other", "login");
-    $view->page_title = t("Login");
-    $view->content = auth::get_login_form("login/auth_html");
+    $view->page_title = t("Log in to Gallery");
+    $view->content = new View("login_ajax.html");
+    $view->content->form = auth::get_login_form("login/auth_html");
     print $view;
   }
 

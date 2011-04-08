@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -371,6 +371,9 @@ class gallery_event_Core {
                 ->id("admin_menu")
                 ->label(t("Admin")));
         module::event("admin_menu", $admin_menu, $theme);
+
+        $settings_menu = $admin_menu->get("settings_menu");
+        uasort($settings_menu->elements, array("Menu", "title_comparator"));
       }
     }
   }
@@ -536,9 +539,9 @@ class gallery_event_Core {
     $v = new View("user_profile_info.html");
 
     $fields = array("name" => t("Name"), "locale" => t("Language Preference"),
-                    "email" => t("Email"), "full_name" => t("Full name"), "url" => "Web site");
+                    "email" => t("Email"), "full_name" => t("Full name"), "url" => t("Web site"));
     if (!$data->user->guest) {
-      $fields = array("name" => t("Name"), "full_name" => t("Full name"), "url" => "Web site");
+      $fields = array("name" => t("Name"), "full_name" => t("Full name"), "url" => t("Web site"));
     }
     $v->user_profile_data = array();
     foreach ($fields as $field => $label) {
@@ -546,6 +549,8 @@ class gallery_event_Core {
         $value = $data->user->$field;
         if ($field == "locale") {
           $value = locales::display_name($value);
+        } elseif ($field == "url") {
+          $value = html::mark_clean(html::anchor($data->user->$field));
         }
         $v->user_profile_data[(string) $label] = $value;
       }

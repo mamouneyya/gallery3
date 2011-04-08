@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,10 +36,7 @@ class tag_event_Core {
             $tag = str_replace("\0",  "", $tag);
             foreach (explode(",", $tag) as $word) {
               $word = trim($word);
-              if (function_exists("mb_detect_encoding") &&
-                  mb_detect_encoding($word, "ISO-8859-1, UTF-8") != "UTF-8") {
-                $word = utf8_encode($word);
-              }
+              $word = encoding::convert_to_utf8($word);
               $tags[$word] = 1;
             }
           }
@@ -62,6 +59,12 @@ class tag_event_Core {
 
   static function item_deleted($item) {
     tag::clear_all($item);
+    if (!batch::in_progress()) {
+      tag::compact();
+    }
+  }
+
+  static function batch_complete() {
     tag::compact();
   }
 
@@ -88,6 +91,7 @@ class tag_event_Core {
         tag::add($item, trim($tag_name));
       }
     }
+    module::event("item_related_update", $item);
     tag::compact();
   }
 
@@ -106,11 +110,11 @@ class tag_event_Core {
   }
 
   static function add_photos_form($album, $form) {
-    if (!isset($group->uploadify)) {
+    $group = $form->add_photos;
+    if (!is_object($group->uploadify)) {
       return;
     }
-    
-    $group = $form->add_photos;
+
     $group->input("tags")
       ->label(t("Add tags to all uploaded files"))
       ->value("");
@@ -129,15 +133,31 @@ class tag_event_Core {
   }
 
   static function add_photos_form_completed($album, $form) {
-    if (!isset($group->uploadify)) {
+    $group = $form->add_photos;
+    if (!is_object($group->uploadify)) {
       return;
     }
-    
+
     foreach (explode(",", $form->add_photos->tags->value) as $tag_name) {
       $tag_name = trim($tag_name);
       if ($tag_name) {
         $tag = tag::add($album, $tag_name);
       }
+    }
+  }
+
+  static function info_block_get_metadata($block, $item) {
+    $tags = array();
+    foreach (tag::item_tags($item) as $tag) {
+      $tags[] = "<a href=\"" . url::site("tag/{$tag->name}") . "\">{$tag->name}</a>";
+    }
+    if ($tags) {
+      $info = $block->content->metadata;
+      $info["tags"] = array(
+        "label" => t("Tags:"),
+        "value" => implode(", ", $tags)
+      );
+      $block->content->metadata = $info;
     }
   }
 }

@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,18 +24,19 @@ class gallery_graphics_Core {
    * @param string     $input_file
    * @param string     $output_file
    * @param array      $options
+   * @param Item_Model $item (optional)
    */
-  static function rotate($input_file, $output_file, $options) {
+  static function rotate($input_file, $output_file, $options, $item=null) {
     graphics::init_toolkit();
 
-    module::event("graphics_rotate", $input_file, $output_file, $options);
+    module::event("graphics_rotate", $input_file, $output_file, $options, $item);
 
     Image::factory($input_file)
       ->quality(module::get_var("gallery", "image_quality"))
       ->rotate($options["degrees"])
       ->save($output_file);
 
-    module::event("graphics_rotate_completed", $input_file, $output_file, $options);
+    module::event("graphics_rotate_completed", $input_file, $output_file, $options, $item);
   }
 
   /**
@@ -45,18 +46,19 @@ class gallery_graphics_Core {
    * @param string     $input_file
    * @param string     $output_file
    * @param array      $options
+   * @param Item_Model $item (optional)
    */
-  static function resize($input_file, $output_file, $options) {
+  static function resize($input_file, $output_file, $options, $item=null) {
     graphics::init_toolkit();
 
-    module::event("graphics_resize", $input_file, $output_file, $options);
+    module::event("graphics_resize", $input_file, $output_file, $options, $item);
 
     if (@filesize($input_file) == 0) {
       throw new Exception("@todo EMPTY_INPUT_FILE");
     }
 
     $dims = getimagesize($input_file);
-    if (max($dims[0], $dims[1]) < min($options["width"], $options["height"])) {
+    if (max($dims[0], $dims[1]) <= min($options["width"], $options["height"])) {
       // Image would get upscaled; do nothing
       copy($input_file, $output_file);
     } else {
@@ -69,13 +71,13 @@ class gallery_graphics_Core {
       $image->save($output_file);
     }
 
-    module::event("graphics_resize_completed", $input_file, $output_file, $options);
+    module::event("graphics_resize_completed", $input_file, $output_file, $options, $item);
   }
 
   /**
    * Overlay an image on top of the input file.
    *
-   * Valid options are: file, mime_type, position, transparency_percent, padding
+   * Valid options are: file, position, transparency, padding
    *
    * Valid positions: northwest, north, northeast,
    *                  west, center, east,
@@ -86,12 +88,13 @@ class gallery_graphics_Core {
    * @param string     $input_file
    * @param string     $output_file
    * @param array      $options
+   * @param Item_Model $item (optional)
    */
-  static function composite($input_file, $output_file, $options) {
+  static function composite($input_file, $output_file, $options, $item=null) {
     try {
       graphics::init_toolkit();
 
-      module::event("graphics_composite", $input_file, $output_file, $options);
+      module::event("graphics_composite", $input_file, $output_file, $options, $item);
 
       list ($width, $height) = getimagesize($input_file);
       list ($w_width, $w_height) = getimagesize($options["file"]);
@@ -121,7 +124,7 @@ class gallery_graphics_Core {
         ->quality(module::get_var("gallery", "image_quality"))
         ->save($output_file);
 
-      module::event("graphics_composite_completed", $input_file, $output_file, $options);
+      module::event("graphics_composite_completed", $input_file, $output_file, $options, $item);
     } catch (ErrorException $e) {
       Kohana_Log::add("error", $e->get_message());
     }

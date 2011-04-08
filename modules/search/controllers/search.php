@@ -1,7 +1,7 @@
 <?php defined("SYSPATH") or die("No direct script access.");
 /**
  * Gallery - a web based photo album viewer and editor
- * Copyright (C) 2000-2010 Bharat Mediratta
+ * Copyright (C) 2000-2011 Bharat Mediratta
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,22 +22,24 @@ class Search_Controller extends Controller {
     $page_size = module::get_var("gallery", "page_size", 9);
     $q = Input::instance()->get("q");
     $page = Input::instance()->get("page", 1);
-    $offset = ($page - 1) * $page_size;
 
     // Make sure that the page references a valid offset
     if ($page < 1) {
       $page = 1;
     }
 
-    list ($count, $result) = search::search($q, $page_size, $offset);
+    $offset = ($page - 1) * $page_size;
+
+    $q_with_more_terms = search::add_query_terms($q);
+    list ($count, $result) = search::search($q_with_more_terms, $page_size, $offset);
 
     $max_pages = max(ceil($count / $page_size), 1);
 
     $template = new Theme_View("page.html", "collection", "search");
-    $template->set_global("page", $page);
-    $template->set_global("max_pages", $max_pages);
-    $template->set_global("page_size", $page_size);
-    $template->set_global("children_count", $count);
+    $template->set_global(array("page" => $page,
+                                "max_pages" => $max_pages,
+                                "page_size" => $page_size,
+                                "children_count" => $count));
 
     $template->content = new View("search.html");
     $template->content->items = $result;
