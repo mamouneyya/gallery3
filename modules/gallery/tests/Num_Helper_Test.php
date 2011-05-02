@@ -17,19 +17,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA.
  */
-class Pagination extends Pagination_Core {
-  public function render($style=NULL) {
-    // Hide single page pagination
-    if ($this->auto_hide === TRUE AND $this->total_pages <= 1) {
-      return "";
-    }
+class Num_Helper_Test extends Gallery_Unit_Test_Case {
+  public function convert_to_bytes_test() {
+    $this->assert_equal(5 * 1024, num::convert_to_bytes("5K"));
+    $this->assert_equal(3 * 1024*1024, num::convert_to_bytes("3M"));
+    $this->assert_equal(4 * 1024*1024*1024, num::convert_to_bytes("4G"));
+  }
 
-    if ($style === NULL) {
-      // Use default style
-      $style = $this->style;
-    }
-
-    // Return rendered pagination view
-    return View::factory("pager.html", get_object_vars($this))->render();
+  public function convert_to_human_readable_test() {
+    $this->assert_equal("6K", num::convert_to_human_readable(5615));
+    $this->assert_equal("1M", num::convert_to_human_readable(1205615));
+    $this->assert_equal("3G", num::convert_to_human_readable(3091205615));
   }
 }
