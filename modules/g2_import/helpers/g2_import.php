@@ -560,7 +560,7 @@ class g2_import_Core {
     $table = g2(GalleryCoreApi::fetchThumbnailsByItemIds(array($g2_album_id)));
     if (isset($table[$g2_album_id])) {
       // Backtrack the source id to an item
-      $g2_source = $table[$g2_album_id];
+      $orig_g2_source = $g2_source = $table[$g2_album_id];
       while (GalleryUtilities::isA($g2_source, "GalleryDerivative")) {
         $g2_source = g2(GalleryCoreApi::loadEntitiesById($g2_source->getDerivativeSourceId()));
       }
@@ -584,6 +584,11 @@ class g2_import_Core {
                 array("name" => $g3_album->name)),
               $e);
         }
+
+        self::set_map(
+          $orig_g2_source->getId(), $g3_album->id,
+          "thumbnail",
+          self::g2_url(array("view" => "core.DownloadItem", "itemId" => $orig_g2_source->getId())));
       }
     }
   }
@@ -903,9 +908,13 @@ class g2_import_Core {
                array("id" => $g2_comment_id, "exception" => (string)$e));
     }
 
-    if (self::map($g2_comment->getId())) {
-      // Already imported
-      return;
+    if ($id = self::map($g2_comment->getId())) {
+      if (ORM::factory("comment", $id)->loaded()) {
+        // Already imported and still exists
+        return;
+      }
+      // This comment was already imported, but now it no longer exists.  Import it again, per
+      // ticket #1736.
     }
 
     $item_id = self::map($g2_comment->getParentId());
@@ -943,10 +952,11 @@ class g2_import_Core {
     self::set_map($g2_comment->getId(), $comment->id, "comment");
 
     // Backdate the creation date.  We can't do this at creation time because
-    // Comment_Model::save() will override it.
+    // Comment_Model::save() will override it.  Leave the updated date alone
+    // so that if the comments get marked as spam, they don't immediately get
+    // flushed (see ticket #1736)
     db::update("comments")
       ->set("created", $g2_comment->getDate())
-      ->set("updated", $g2_comment->getDate())
       ->where("id", "=", $comment->id)
       ->execute();
   }
@@ -1287,6 +1297,7 @@ class g2_import_Core {
    * Associate a Gallery 2 id with a Gallery 3 item id.
    */
   static function set_map($g2_id, $g3_id, $resource_type, $g2_url=null) {
+    self::clear_map($g2_id, $resource_type);
     $g2_map = ORM::factory("g2_map");
     $g2_map->g3_id = $g3_id;
     $g2_map->g2_id = $g2_id;
@@ -1299,6 +1310,17 @@ class g2_import_Core {
     $g2_map->g2_url = $g2_url;
     $g2_map->save();
     self::$map[$g2_id] = $g3_id;
+  }
+
+  /**
+   * Remove all map entries associated with the given Gallery 2 id.
+   */
+  static function clear_map($g2_id, $resource_type) {
+    db::build()
+      ->delete("g2_maps")
+      ->where("g2_id", "=", $g2_id)
+      ->where("resource_type", "=", $resource_type)
+      ->execute();
   }
 
   static function log($msg) {
