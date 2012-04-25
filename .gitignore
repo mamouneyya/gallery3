@@ -6,10 +6,10 @@ local.php
 
 # mamouneyya
 .gitignore
-var_old
+var_old/
 themes/browny_wind
 themes/browny_admin_wind
-themes/clean_canvas
 themes/poymc
 themes/poymc_admin
+themes/clean_canvas
 themes/windpress
